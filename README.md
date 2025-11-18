@@ -58,7 +58,7 @@ No LLMs are used in this phase.
 ---
 
 ## Folder Structure
-
+```
 jazz-graph-agent/
 |
 ├── main.py
@@ -72,8 +72,7 @@ jazz-graph-agent/
 │   ├── visualize.py
 |
 └── data/output/
-
----
+```
 
 ## Data Source
 
