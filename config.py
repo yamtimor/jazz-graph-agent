@@ -19,7 +19,7 @@ class JazzGraphConfig:
     era_end_year: int = 1960
 
     # Agent / LLM config
-    llm_model: str = os.getenv("OPENAI_MODEL", "gpt-4.1-mini")
+    llm_model: str = os.getenv("OPENAI_MODEL", "gpt-4o-mini")
     max_tokens: int = 3000
 
     # Data source
