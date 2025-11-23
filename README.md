@@ -244,12 +244,13 @@ For **Charlie Parker (1940-1960)**:
 
 ## Contributing
 
-This is an educational project. Contributions welcome:
-- Better data sources
-- Improved error handling
-- Additional SNA metrics
-- UI improvements
-- Test coverage
+Contributions are welcome! Whether you're fixing bugs, adding features, improving documentation, or sharing jazz knowledge — we'd love your help.
+
+Please read our [CONTRIBUTING.md](CONTRIBUTING.md) for:
+- Development setup
+- Code style guidelines
+- Pull request process
+- Issue labels and workflow
 
 ---
 
