@@ -80,7 +80,7 @@ jazz-graph-agent/
 │   ├── agent.py              # LangGraph state machine and workflow
 │   ├── tools.py              # fetch_jazz_data tool (MusicBrainz API + fallback)
 │   ├── prompts.py            # System prompt and Pydantic schemas
-│   └── model.py              # ChatOpenAI model configuration
+│   └── model.py              # Multi-provider LLM factory (OpenAI + HuggingFace)
 │
 ├── pipeline/
 │   ├── graph_builder.py      # JSON → NetworkX graph
@@ -97,7 +97,9 @@ jazz-graph-agent/
 
 ### Prerequisites
 - Python 3.10+
-- OpenAI API key
+- API key for your chosen LLM provider:
+  - **OpenAI** API key (for GPT models), OR
+  - **HuggingFace** API key (for Llama, Mixtral, and other open models)
 
 ### 1. Clone the repository
 ```bash
@@ -117,13 +119,25 @@ pip install -r requirements.txt
 ```
 
 ### 4. Configure environment variables
-Create a `.env` file in the project root:
+Create a `.env` file in the project root. See `docs/ENV_TEMPLATE.md` for full details.
 
+**For OpenAI (default):**
 ```env
+LLM_PROVIDER=openai
+LLM_MODEL=gpt-4o-mini
 OPENAI_API_KEY=sk-proj-xxxxxxxxxxxxx
-# Optional: Override default model
-# OPENAI_MODEL=gpt-4o-mini
 ```
+
+**For HuggingFace:**
+```env
+LLM_PROVIDER=huggingface
+LLM_MODEL=meta-llama/Llama-3.1-70B-Instruct
+HUGGINGFACE_API_KEY=hf_xxxxxxxxxxxxx
+```
+
+Get your API keys:
+- OpenAI: https://platform.openai.com/api-keys
+- HuggingFace: https://huggingface.co/settings/tokens
 
 ### 5. Run the pipeline
 ```bash
@@ -138,7 +152,7 @@ python main.py
 
 ## Configuration
 
-Edit `config.py` to customize:
+Edit `config.py` or use environment variables to customize:
 
 ```python
 @dataclass(frozen=True)
@@ -149,9 +163,29 @@ class JazzGraphConfig:
     era_end_year: int = 1960
     
     # LLM settings
+    llm_provider: str = "openai"  # or "huggingface"
     llm_model: str = "gpt-4o-mini"
     max_tokens: int = 3000
 ```
+
+### Supported LLM Providers
+
+| Provider | Models | Pros | Cons |
+|----------|--------|------|------|
+| **OpenAI** | gpt-4o-mini, gpt-4o, gpt-4-turbo | Excellent reliability, fast, great structured output | Requires paid API key |
+| **HuggingFace** | Llama-3.1-70B, Mixtral-8x7B, etc. | Open models, flexible, good quality | May be slower, requires experimentation |
+
+### Recommended Models
+
+**OpenAI:**
+- `gpt-4o-mini` - Fast, cost-effective (default)
+- `gpt-4o` - Best quality for complex networks
+- `gpt-4-turbo` - Good balance
+
+**HuggingFace:**
+- `meta-llama/Llama-3.1-70B-Instruct` - Best quality
+- `mistralai/Mixtral-8x7B-Instruct-v0.1` - Good balance
+- `meta-llama/Llama-3.2-11B-Vision-Instruct` - Lighter weight
 
 ---
 
@@ -205,7 +239,8 @@ The project is designed to easily swap data sources by modifying `agent/tools.py
 This project demonstrates:
 
 ✅ **LangGraph state machines** for agent workflow control  
-✅ **Structured LLM output** with Pydantic validation  
+✅ **Structured LLM output** with Pydantic validation (using Instructor)  
+✅ **Multi-provider LLM support** (OpenAI + HuggingFace)  
 ✅ **Tool integration** (API calls within agent context)  
 ✅ **LLM + deterministic code** separation (hybrid architecture)  
 ✅ **Error handling** throughout the pipeline  
@@ -239,6 +274,8 @@ For **Charlie Parker (1940-1960)**:
 - Export metrics to JSON for further analysis
 - Support multiple seed musicians
 - Add time-series analysis (collaboration evolution)
+- Add support for local LLM models (via Ollama)
+- Expand to more LLM providers (Anthropic Claude, Google Gemini)
 
 ---
 
