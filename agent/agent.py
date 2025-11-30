@@ -2,7 +2,8 @@ from typing import Dict, Any, TypedDict, Annotated
 from langgraph.graph import StateGraph, END
 from langgraph.prebuilt import ToolNode
 from langchain_core.messages import HumanMessage, SystemMessage
-from agent.model import model
+import instructor
+from agent.model import model, get_raw_client
 from agent.prompts import SYSTEM_PROMPT, ResponseFormat
 from agent.tools import fetch_jazz_data
 from config import CONFIG
@@ -55,15 +56,46 @@ Extract all musicians and their collaboration relationships. Create a graph stru
 - edges: list of collaboration relationships between musicians
 """
         
-        # Use structured output with the LLM
-        structured_llm = model.with_structured_output(ResponseFormat)
+        # Use Instructor for structured output across providers
+        provider = CONFIG.llm_provider
         
-        messages = [
-            SystemMessage(content=SYSTEM_PROMPT),
-            HumanMessage(content=user_message)
-        ]
+        if provider == "openai":
+            # Use OpenAI with Instructor
+            client = get_raw_client(provider)
+            instructor_client = instructor.from_openai(client)
+            
+            result = instructor_client.chat.completions.create(
+                model=CONFIG.llm_model,
+                response_model=ResponseFormat,
+                messages=[
+                    {"role": "system", "content": SYSTEM_PROMPT},
+                    {"role": "user", "content": user_message}
+                ],
+                max_tokens=CONFIG.max_tokens,
+                temperature=0,
+            )
         
-        result = structured_llm.invoke(messages)
+        elif provider == "huggingface":
+            # Use HuggingFace with Instructor
+            from instructor import Mode
+            client = get_raw_client(provider)
+            instructor_client = instructor.from_huggingface(client, mode=Mode.JSON)
+            
+            # Combine system and user messages for HF
+            combined_message = f"{SYSTEM_PROMPT}\n\n{user_message}"
+            
+            result = instructor_client.chat.completions.create(
+                model=CONFIG.llm_model,
+                response_model=ResponseFormat,
+                messages=[
+                    {"role": "user", "content": combined_message}
+                ],
+                max_tokens=CONFIG.max_tokens,
+                temperature=0,
+            )
+        
+        else:
+            raise ValueError(f"Unsupported provider: {provider}")
         
         if not result or not hasattr(result, 'nodes'):
             raise ValueError("LLM did not return valid structured output")

@@ -23,8 +23,13 @@ class JazzGraphConfig:
     era_end_year: int = 1960
 
     # Agent / LLM config
-    llm_model: str = os.getenv("OPENAI_MODEL", "gpt-4o-mini")
-    max_tokens: int = 3000
+    llm_provider: str = os.getenv("LLM_PROVIDER", "openai")
+    llm_model: str = os.getenv("LLM_MODEL", os.getenv("OPENAI_MODEL", "gpt-4o-mini"))
+    max_tokens: int = int(os.getenv("MAX_TOKENS", "3000"))
+    
+    # API Keys (provider-specific)
+    openai_api_key: str = os.getenv("OPENAI_API_KEY", "")
+    huggingface_api_key: str = os.getenv("HUGGINGFACE_API_KEY", "")
 
     # Data source
     jazz_disco_base_url: str = "https://www.jazzdisco.org"
